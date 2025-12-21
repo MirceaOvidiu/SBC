@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem de Interogare Bază de Cunoștințe XML</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: #e0e0e0;
+        }
+
+        .tab.active {
+            background: white;
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .output-box {
+            margin-top: 30px;
+            background: #f8f9fa;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 100px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        .output-box.success {
+            border-color: #28a745;
+            background: #d4edda;
+        }
+
+        .output-box.error {
+            border-color: #dc3545;
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .data-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-priority-1 {
+            background: #dc3545;
+            color: white;
+        }
+
+        .badge-priority-2 {
+            background: #ffc107;
+            color: black;
+        }
+
+        .badge-priority-3 {
+            background: #28a745;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Bază de Cunoștințe Logistică</h1>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="openTab(event, 'query')">Sistem Interogări</button>
+            <button class="tab" onclick="openTab(event, 'roads')">Vizualizare Drumuri</button>
+            <button class="tab" onclick="openTab(event, 'vehicles')">Vizualizare Vehicule</button>
+            <button class="tab" onclick="openTab(event, 'orders')">Vizualizare Comenzi</button>
+            <button class="tab" onclick="openTab(event, 'facts')">Toate Faptele</button>
+            <button class="tab" onclick="openTab(event, 'rules')">Toate Regulile</button>
+        </div>
+
+        <!-- Query Tab -->
+        <div id="query" class="tab-content active">
+            <div class="info-section">
+                <h3>📋 Tipuri de Interogări</h3>
+                <p>Selectați un tip de interogare și furnizați parametrii necesari pentru a interoga baza de cunoștințe:</p>
+            </div>
+
+            <div class="form-group">
+                <label for="queryType">Selectați Tipul de Interogare:</label>
+                <select id="queryType" onchange="updateQueryForm()">
+                    <option value="direct_connection">Conexiune Directă (A, B)</option>
+                    <option value="connection_via">Conexiune Prin (A, B, C)</option>
+                    <option value="check_depot">Verificare Depozit (A sau B)</option>
+                    <option value="vehicles_by_weight">Vehicule după Greutate</option>
+                    <option value="orders_from">Comenzi din Locație</option>
+                    <option value="priority_orders">Comenzi Prioritare (Plecare, Destinație)</option>
+                    <option value="fuel_consumption">Consum Combustibil (A, B, Consum)</option>
+                    <option value="vehicle_order">Vehicul pentru Comandă (Vehicul, ID Comandă)</option>
+                </select>
+            </div>
+
+            <div id="queryForm"></div>
+
+            <button class="btn" onclick="executeQuery()">Execută Interogarea</button>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Se procesează interogarea...</p>
+            </div>
+
+            <div id="queryOutput" class="output-box" style="display: none;"></div>
+        </div>
+
+        <!-- Roads Tab -->
+        <div id="roads" class="tab-content">
+            <div class="info-section">
+                <h3>🛣️ Rețea de Drumuri</h3>
+                <p>Toate drumurile din sistemul logistic cu informații despre distanță și timp:</p>
+            </div>
+            <div id="roadsContent"></div>
+        </div>
+
+        <!-- Vehicles Tab -->
+        <div id="vehicles" class="tab-content">
+            <div class="info-section">
+                <h3>🚛 Flotă de Vehicule</h3>
+                <p>Toate vehiculele disponibile cu capacitate și consum de combustibil:</p>
+            </div>
+            <div id="vehiclesContent"></div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders" class="tab-content">
+            <div class="info-section">
+                <h3>📦 Comenzi</h3>
+                <p>Toate comenzile care necesită livrare:</p>
+            </div>
+            <div id="ordersContent"></div>
+        </div>
+
+        <!-- Facts Tab -->
+        <div id="facts" class="tab-content">
+            <div class="info-section">
+                <h3>📚 Fapte din Baza de Cunoștințe</h3>
+                <p>Toate faptele stocate în baza de cunoștințe:</p>
+            </div>
+            <div id="factsContent"></div>
+        </div>
+
+        <!-- Rules Tab -->
+        <div id="rules" class="tab-content">
+            <div class="info-section">
+                <h3>⚙️ Reguli de Inferență</h3>
+                <p>Toate regulile utilizate pentru inferență:</p>
+            </div>
+            <div id="rulesContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function openTab(evt, tabName) {
+            const tabContents = document.getElementsByClassName('tab-content');
+            for (let content of tabContents) {
+                content.classList.remove('active');
+            }
+
+            const tabs = document.getElementsByClassName('tab');
+            for (let tab of tabs) {
+                tab.classList.remove('active');
+            }
+
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+
+            // Load content when switching to data tabs
+            if (tabName === 'roads') loadRoads();
+            if (tabName === 'vehicles') loadVehicles();
+            if (tabName === 'orders') loadOrders();
+            if (tabName === 'facts') loadFacts();
+            if (tabName === 'rules') loadRules();
+        }
+
+        // Update query form based on selected type
+        function updateQueryForm() {
+            const queryType = document.getElementById('queryType').value;
+            const formContainer = document.getElementById('queryForm');
+            
+            let formHTML = '<div class="grid">';
+            
+            switch(queryType) {
+                case 'direct_connection':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Locația A:</label>
+                            <input type="text" id="paramA" placeholder="ex: bucuresti">
+                        </div>
+                        <div class="form-group">
+                            <label>Locația B:</label>
+                            <input type="text" id="paramB" placeholder="ex: craiova">
+                        </div>
+                    `;
+                    break;
+                case 'connection_via':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Locația A:</label>
+                            <input type="text" id="paramA" placeholder="ex: bucuresti">
+                        </div>
+                        <div class="form-group">
+                            <label>Locația B:</label>
+                            <input type="text" id="paramB" placeholder="ex: craiova">
+                        </div>
+                        <div class="form-group">
+                            <label>Prin Locația C:</label>
+                            <input type="text" id="paramC" placeholder="ex: ploiesti">
+                        </div>
+                    `;
+                    break;
+                case 'check_depot':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Locație:</label>
+                            <input type="text" id="paramA" placeholder="ex: bucuresti">
+                        </div>
+                    `;
+                    break;
+                case 'vehicles_by_weight':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Greutate (kg):</label>
+                            <input type="number" id="paramGreutate" placeholder="ex: 4000">
+                        </div>
+                    `;
+                    break;
+                case 'orders_from':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Locație de Plecare:</label>
+                            <input type="text" id="paramPlecare" placeholder="ex: bucuresti">
+                        </div>
+                    `;
+                    break;
+                case 'priority_orders':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Plecare:</label>
+                            <input type="text" id="paramPlecare" placeholder="ex: bucuresti">
+                        </div>
+                        <div class="form-group">
+                            <label>Destinație:</label>
+                            <input type="text" id="paramDestinatie" placeholder="ex: pitesti">
+                        </div>
+                    `;
+                    break;
+                case 'fuel_consumption':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Locația A:</label>
+                            <input type="text" id="paramA" placeholder="ex: bucuresti">
+                        </div>
+                        <div class="form-group">
+                            <label>Locația B:</label>
+                            <input type="text" id="paramB" placeholder="ex: craiova">
+                        </div>
+                        <div class="form-group">
+                            <label>Consum Combustibil (L/km):</label>
+                            <input type="number" id="paramConsum" placeholder="ex: 5">
+                        </div>
+                    `;
+                    break;
+                case 'vehicle_order':
+                    formHTML += `
+                        <div class="form-group">
+                            <label>Nume Vehicul:</label>
+                            <input type="text" id="paramVehicul" placeholder="ex: tir1">
+                        </div>
+                        <div class="form-group">
+                            <label>ID Comandă:</label>
+                            <input type="text" id="paramId" placeholder="ex: 1">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            formHTML += '</div>';
+            formContainer.innerHTML = formHTML;
+        }
+
+        // Execute query
+        async function executeQuery() {
+            const queryType = document.getElementById('queryType').value;
+            const loading = document.getElementById('loading');
+            const output = document.getElementById('queryOutput');
+            
+            // Gather parameters
+            const params = {};
+            const inputs = document.querySelectorAll('#queryForm input');
+            inputs.forEach(input => {
+                const paramName = input.id.replace('param', '');
+                if (input.value) {
+                    params[paramName] = input.value;
+                }
+            });
+            
+            loading.classList.add('active');
+            output.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/query', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query_type: queryType,
+                        params: params
+                    })
+                });
+                
+                const data = await response.json();
+                
+                loading.classList.remove('active');
+                output.style.display = 'block';
+                
+                if (data.success) {
+                    output.className = 'output-box success';
+                    output.innerHTML = formatQueryResult(data.result, queryType);
+                } else {
+                    output.className = 'output-box error';
+                    output.textContent = 'Eroare: ' + data.error;
+                }
+            } catch (error) {
+                loading.classList.remove('active');
+                output.style.display = 'block';
+                output.className = 'output-box error';
+                output.textContent = 'Eroare: ' + error.message;
+            }
+        }
+
+        // Format query result for display
+        function formatQueryResult(result, queryType) {
+            if (!result) return 'Niciun rezultat';
+            
+            let html = `<div style="font-size: 16px;"><strong>${result.message}</strong></div><br>`;
+            
+            switch(queryType) {
+                case 'direct_connection':
+                    if (result.has_connection) {
+                        html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA</div>`;
+                        if (result.distance_km) {
+                            html += `<div style="margin-top: 10px;">📏 Distanță: <strong>${result.distance_km} km</strong></div>`;
+                        }
+                        if (result.time_min) {
+                            html += `<div>⏱️ Timp: <strong>${result.time_min} minute</strong></div>`;
+                        }
+                    } else {
+                        html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU</div>`;
+                    }
+                    break;
+                    
+                case 'connection_via':
+                    if (result.has_connection) {
+                        html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA</div>`;
+                    } else {
+                        html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU</div>`;
+                    }
+                    break;
+                    
+                case 'check_depot':
+                    if (result.is_depot) {
+                        html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA - Este depozit</div>`;
+                    } else {
+                        html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU - Nu este depozit</div>`;
+                    }
+                    break;
+                    
+                case 'vehicles_by_weight':
+                    html += `<div style="font-size: 18px; font-weight: bold; color: #667eea;">📊 ${result.count} vehicul(e)</div>`;
+                    if (result.vehicle_details && result.vehicle_details.length > 0) {
+                        html += '<div style="margin-top: 15px;"><table class="data-table" style="font-size: 14px;"><thead><tr><th>ID</th><th>Nume Vehicul</th><th>Capacitate (kg)</th><th>Consum (L/100km)</th></tr></thead><tbody>';
+                        result.vehicle_details.forEach(v => {
+                            html += `
+                                <tr>
+                                    <td>${v.id}</td>
+                                    <td>🚛 ${v.name}</td>
+                                    <td>${v.capacity}</td>
+                                    <td>${v.consumption}</td>
+                                </tr>
+                            `;
+                        });
+                        html += '</tbody></table></div>';
+                    }
+                    break;
+                    
+                case 'orders_from':
+                    html += `<div style="font-size: 18px; font-weight: bold; color: #667eea;">📦 ${result.count} comandă/comenzi</div>`;
+                    if (result.orders && result.orders.length > 0) {
+                        html += '<ul style="margin-top: 10px;">';
+                        result.orders.forEach(o => {
+                            html += `<li>${o}</li>`;
+                        });
+                        html += '</ul>';
+                    }
+                    break;
+                    
+                case 'priority_orders':
+                    if (result.has_priority_order) {
+                        html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA - Există comenzi cu prioritate 1</div>`;
+                    } else {
+                        html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU - Fără comenzi cu prioritate 1</div>`;
+                    }
+                    break;
+                    
+                case 'fuel_consumption':
+                    if (result.fuel_liters !== null && result.fuel_liters !== undefined) {
+                        html += `<div style="font-size: 24px; font-weight: bold; color: #667eea;">⛽ ${result.fuel_liters} litri</div>`;
+                    } else {
+                        html += `<div style="color: #dc3545;">Nu s-a putut calcula consumul</div>`;
+                    }
+                    break;
+                    
+                case 'vehicle_order':
+                    if (result.can_handle) {
+                        html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA - Vehiculul poate transporta comanda</div>`;
+                    } else {
+                        html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU - Vehiculul nu poate transporta comanda</div>`;
+                    }
+                    break;
+            }
+            
+            // Add debug output in small text
+            if (result.raw_output) {
+                html += `<details style="margin-top: 20px; font-size: 12px; color: #666;">
+                    <summary style="cursor: pointer;">Detalii tehnice (click pentru a extinde)</summary>
+                    <pre style="margin-top: 10px; white-space: pre-wrap;">${result.raw_output}</pre>
+                </details>`;
+            }
+            
+            return html;
+        }
+
+        // Load roads
+        async function loadRoads() {
+            const container = document.getElementById('roadsContent');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/facts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const roads = data.facts.filter(f => f.type === 'drum');
+                    
+                    let html = '<table class="data-table"><thead><tr><th>ID</th><th>Locația A</th><th>Locația B</th><th>Distanță (km)</th><th>Timp (min)</th></tr></thead><tbody>';
+                    
+                    roads.forEach(road => {
+                        html += `
+                            <tr>
+                                <td>${road.value}</td>
+                                <td>${road.attributes.locatieA}</td>
+                                <td>${road.attributes.locatieB}</td>
+                                <td>${road.attributes.distanta}</td>
+                                <td>${road.attributes.timp}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="error">Eroare la încărcarea drumurilor</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="error">Eroare: ' + error.message + '</p>';
+            }
+        }
+
+        // Load vehicles
+        async function loadVehicles() {
+            const container = document.getElementById('vehiclesContent');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/facts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const vehicles = data.facts.filter(f => f.type === 'vehicul');
+                    
+                    let html = '<table class="data-table"><thead><tr><th>ID</th><th>Nume Vehicul</th><th>Capacitate (kg)</th><th>Consum (L/100km)</th></tr></thead><tbody>';
+                    
+                    vehicles.forEach(vehicle => {
+                        html += `
+                            <tr>
+                                <td>${vehicle.value}</td>
+                                <td>${vehicle.attributes.autoturism}</td>
+                                <td>${vehicle.attributes.capacitate}</td>
+                                <td>${vehicle.attributes.consum}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="error">Eroare la încărcarea vehiculelor</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="error">Eroare: ' + error.message + '</p>';
+            }
+        }
+
+        // Load orders
+        async function loadOrders() {
+            const container = document.getElementById('ordersContent');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/facts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const orders = data.facts.filter(f => f.type === 'comanda');
+                    
+                    let html = '<table class="data-table"><thead><tr><th>ID Comandă</th><th>De la</th><th>Către</th><th>Greutate (kg)</th><th>Prioritate</th></tr></thead><tbody>';
+                    
+                    orders.forEach(order => {
+                        const priority = order.attributes.prioritate;
+                        html += `
+                            <tr>
+                                <td>${order.attributes.id}</td>
+                                <td>${order.attributes.nod1}</td>
+                                <td>${order.attributes.nod2}</td>
+                                <td>${order.attributes.greutate}</td>
+                                <td><span class="badge badge-priority-${priority}">Prioritate ${priority}</span></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="error">Eroare la încărcarea comenzilor</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="error">Eroare: ' + error.message + '</p>';
+            }
+        }
+
+        // Load facts
+        async function loadFacts() {
+            const container = document.getElementById('factsContent');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/facts');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '<table class="data-table"><thead><tr><th>Tip</th><th>ID</th><th>Atribute</th></tr></thead><tbody>';
+                    
+                    data.facts.forEach(fact => {
+                        const attrs = JSON.stringify(fact.attributes, null, 2);
+                        html += `
+                            <tr>
+                                <td>${fact.type}</td>
+                                <td>${fact.value}</td>
+                                <td><pre style="margin: 0; font-size: 12px;">${attrs}</pre></td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</tbody></table>';
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="error">Eroare la încărcarea faptelor</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="error">Eroare: ' + error.message + '</p>';
+            }
+        }
+
+        // Load rules
+        async function loadRules() {
+            const container = document.getElementById('rulesContent');
+            container.innerHTML = '<div class="loading active"><div class="spinner"></div></div>';
+            
+            try {
+                const response = await fetch('/api/rules');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let html = '';
+                    
+                    data.rules.forEach((rule, index) => {
+                        html += `
+                            <div class="info-section" style="margin-bottom: 20px;">
+                                <h3>Regula ${index + 1}</h3>
+                                <p><strong>Condiții:</strong></p>
+                                <ul>
+                                    ${rule.conditions.map(c => `<li>${c}</li>`).join('')}
+                                </ul>
+                                <p><strong>Concluzie:</strong> ${rule.conclusion}</p>
+                                ${rule.calculus ? `<p><strong>Calcul:</strong> ${rule.calculus.join(', ')}</p>` : ''}
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p class="error">Eroare la încărcarea regulilor</p>';
+                }
+            } catch (error) {
+                container.innerHTML = '<p class="error">Eroare: ' + error.message + '</p>';
+            }
+        }
+
+        // Initialize form on page load
+        updateQueryForm();
+    </script>
+</body>
+</html>

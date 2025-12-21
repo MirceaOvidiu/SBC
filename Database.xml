@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<SistemLogistic>
+    <!-- Fapte -->
+
+    <!-- Drumuri  -->
+    <fapt>
+        <drum locatieA="bucuresti" locatieB="craiova" distanta="250" timp="150">drum_1</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="pitesti" locatieB="ploiesti" distanta="127" timp="120">drum_3</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="craiova" locatieB="ploiesti" distanta="254" timp="210">drum_4</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="bucuresti" locatieB="constanta" distanta="223" timp="150">drum_5</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="ploiesti" locatieB="constanta" distanta="300" timp="180">drum_6</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="ploiesti" locatieB="giurgiu" distanta="153" timp="120">drum_7</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="constanta" locatieB="giurgiu" distanta="287" timp="175">drum_8</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="craiova" locatieB="brasov" distanta="275" timp="270">drum_9</drum>
+    </fapt>
+
+    <fapt>
+        <drum locatieA="brasov" locatieB="giurgiu" distanta="243" timp="220">drum_10</drum>
+    </fapt>
+
+    <!-- Vehicule -->
+    <fapt>
+        <vehicul autoturism="tir1" capacitate="10000" consum="35">vehicul_1</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="tir2" capacitate="9500" consum="30">vehicul_2</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="camion1" capacitate="5000" consum="25">vehicul_3</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="camion2" capacitate="4000" consum="22.5">vehicul_4</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="camion3" capacitate="4500" consum="20">vehicul_5</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="dubita1" capacitate="2000" consum="15">vehicul_6</vehicul>
+    </fapt>
+
+    <fapt>
+        <vehicul autoturism="dubita2" capacitate="1800" consum="12.5">vehicul_7</vehicul>
+    </fapt>
+
+    <!-- Comenzi -->
+    <fapt>
+        <comanda id="1" nod1="bucuresti" nod2="pitesti" greutate="1000" prioritate="1">comanda_1</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="2" nod1="craiova" nod2="ploiesti" greutate="2000" prioritate="2">comanda_2</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="3" nod1="bucuresti" nod2="giurgiu" greutate="3000" prioritate="1">comanda_3</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="4" nod1="pitesti" nod2="constanta" greutate="1500" prioritate="3">comanda_4</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="5" nod1="craiova" nod2="brasov" greutate="1200" prioritate="2">comanda_5</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="6" nod1="constanta" nod2="giurgiu" greutate="3000" prioritate="2">comanda_6</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="7" nod1="constanta" nod2="ploiesti" greutate="1700" prioritate="3">comanda_7</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="8" nod1="brasov" nod2="bucuresti" greutate="3500" prioritate="1">comanda_8</comanda>
+    </fapt>
+
+    <fapt>
+        <comanda id="9" nod1="giurgiu" nod2="craiova" greutate="2500" prioritate="3">comanda_9</comanda>
+    </fapt>
+
+    <!-- Depozite -->
+    <fapt>
+        <depozit nume="bucuresti">depozit_1</depozit>
+    </fapt>
+
+    <fapt>
+        <depozit nume="pitesti">depozit_2</depozit>
+    </fapt>
+
+    <fapt>
+        <depozit nume="constanta">depozit_3</depozit>
+    </fapt>
+
+    <fapt>
+        <depozit nume="craiova">depozit_4</depozit>
+    </fapt>
+
+    <!-- Reguli -->
+
+    <!-- 1. 
+    Verifica daca exista o conexiune directa intre doua locatii.
+    Se verifica daca drumurile sunt bidirectionale si distanta este pozitiva. -->
+    <regula>
+        <conditie>drum(A, B, Distanta, Timp); drum(B, A, Distanta, Timp)</conditie>
+        <conditie>Distanta > 0</conditie>
+        <conditie>Timp > 0</conditie>
+        <concluzie>conexiune_directa(A, B)</concluzie>
+    </regula>
+
+    <!-- 2.
+    Calculeaza distanta si timpul pentru o conexiune directa intre doua locatii. -->
+    <regula>
+        <conditie>conexiune_directa(A, B)</conditie>
+        <conditie>drum(A, B, Distanta, Timp)</conditie>
+        <concluzie>distanta_timp(A, B, Distanta, Timp)</concluzie>
+    </regula>
+
+    <!-- 3.
+    Verifica daca o anumita locatie este un depozit.
+    Locatia trebuie sa fie listata ca depozit si sa aiba cel putin un drum asociat. -->
+    <regula>
+        <conditie>depozit(Locatie)</conditie>
+        <conditie>drum(Locatie, _, _, _) ; drum(_, Locatie, _, _)</conditie>
+        <concluzie>depozit_disponibil(Locatie)</concluzie>
+    </regula>
+
+    <!-- 4. 
+    Gaseste o ruta simpla intre doua locatii cu un singur intermediar.
+    Locatiile intermediare trebuie sa aiba drumuri definite si directe. -->
+    <regula>
+        <conditie>drum(A, C, _, _)</conditie>
+        <conditie>drum(C, B, _, _)</conditie>
+        <conditie>A \= C</conditie>
+        <conditie>C \= B</conditie>
+        <conditie>A \= B</conditie>
+        <concluzie>ruta_simpla(A, C, B)</concluzie>
+    </regula>
+
+    <!-- 5.
+    Selecteaza vehicule capabile sa transporte o anumita greutate.
+    Vehiculul trebuie sa aiba capacitate suficienta si consum definit. -->
+    <regula>
+        <conditie>vehicul(Vehicul, Capacitate, Consum)</conditie>
+        <conditie>Capacitate >= Greutate</conditie>
+        <concluzie>vehicul_potrivit(Greutate, Vehicul)</concluzie>
+    </regula>
+
+    <!-- 6. 
+    Gaseste toate comenzile care pleaca dintr-o locatie specifica.
+    Locatia de plecare trebuie sa fie definita si diferita de destinatie. -->
+    <regula>
+        <conditie>comanda(Id, Plecare, Destinatie, _, _)</conditie>
+        <conditie>Plecare \= Destinatie</conditie>
+        <concluzie>comenzi_pentru_locatie(Plecare, Id)</concluzie>
+    </regula>
+
+    <!-- 7. Selecteaza comenzile cu prioritate ridicata (prioritate = 1).
+    Comanda trebuie sa aiba locatii definite. -->
+    <regula>
+        <conditie>comanda(Id, Plecare, Destinatie, Greutate, 1)</conditie>
+        <concluzie>comanda_prioritara(Id, Plecare, Destinatie, Greutate)</concluzie>
+    </regula>
+
+    <!-- TBC -->
+    <!-- 8. Gaseste vehiculul cel mai eficient pentru o greutate data.
+        Vehiculul trebuie sa fie capabil sa transporte greutatea si sa aiba cel mai mic consum.  -->
+    <!-- <regula>
+        <conditie>vehicul(Vehicul, Capacitate, Consum)</conditie>
+        <conditie>Capacitate >= Greutate</conditie>
+        <conditie>Consum > 0</conditie>
+        <conditie>\+ (vehicul(AltVehicul, AltCapacitate, AltConsum), AltCapacitate >= Greutate,
+            AltConsum &lt; Consum , AltVehicul \= Vehicul)</conditie>
+        <concluzie>vehicul_eficient(Greutate, Vehicul)</concluzie>
+    </regula> -->
+
+    <!-- 9. Calculeaza consumul de combustibil pentru o ruta directa.
+    Ruta si consumul vehiculului trebuie sa fie definite. -->
+    <regula>
+        <conditie>vehicul(Vehicul, _, ConsumPerKm)</conditie>
+        <conditie>drum(A, B, Distanta, _)</conditie>
+        <conditie>Distanta > 0</conditie>
+        <calcul>Consum is (Distanta / 100) * ConsumPerKm</calcul>
+        <concluzie>consum_ruta_directa(Vehicul, A, B, Consum)</concluzie>
+    </regula>
+
+    <!-- 10. Determina distanta totala intre doua locatii conectate direct.
+    Distanta trebuie sa fie definita si pozitiva. -->
+    <regula>
+        <conditie>drum(A, B, Distanta, _) ; drum(B, A, Distanta, _)</conditie>
+        <conditie>Distanta > 0</conditie>
+        <concluzie>distanta_totala(A, B, Distanta)</concluzie>
+    </regula>
+
+    <!-- Not fixed because of 4 -->
+    <!-- 11. Verifica daca exista o ruta intre doua locatii (directa sau cu un intermediar).
+    Ruta trebuie sa implice locatii valide si distante non-zero. -->
+    <regula>
+        <conditie>conexiune_directa(A, B) ; (ruta_simpla(A, _, B) , A \= B)</conditie>
+        <concluzie>ruta_disponibila(A, B)</concluzie>
+    </regula>
+
+    <!-- 12. Verifica daca o comanda poate fi transportata de un vehicul dat.
+    Capacitatea vehiculului trebuie sa fie suficienta pentru greutatea comenzii. -->
+    <regula>
+        <conditie>comanda(Id, _, _, Greutate, _)</conditie>
+        <conditie>vehicul(Vehicul, Capacitate, _)</conditie>
+        <conditie>Capacitate >= Greutate</conditie>
+        <concluzie>comanda_transportabila(Vehicul, Id)</concluzie>
+    </regula>
+
+    <!-- 13. Calculeaza timpul total pentru o ruta directa.
+    Timpul trebuie sa fie definit si pozitiv. -->
+    <regula>
+        <conditie>(drum(A, B, _, Timp) ; drum(B, A, _, Timp))</conditie>
+        <conditie>Timp > 0</conditie>
+        <concluzie>timp_total(A, B, Timp)</concluzie>
+    </regula>
+
+    <!-- 14. Verifica daca exista o conexiune reciproca intre doua locatii.
+    Conexiunea trebuie sa fie definita in ambele directii. -->
+    <regula>
+        <conditie>conexiune_directa(A, B)</conditie>
+        <conditie>conexiune_directa(B, A)</conditie>
+        <concluzie>conexiune_reciproca(A, B)</concluzie>
+    </regula>
+
+    <!-- TBC -->
+    <!--15.
+    Gaseste vehiculul cu capacitatea cea mai mare.
+    Vehiculul trebuie sa fie unic in ceea ce priveste capacitatea sa maxima. -->
+    <!-- <regula>
+        <conditie>vehicul(Vehicul, Capacitate, _)</conditie>
+        <conditie>\+ (vehicul(_, AltaCapacitate, _), AltaCapacitate > Capacitate)</conditie>
+        <concluzie>vehicul_maxim(Vehicul)</concluzie>
+    </regula> -->
+</SistemLogistic>
