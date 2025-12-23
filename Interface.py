@@ -232,8 +232,6 @@ def verify_facts(condition, facts, value, **args):
         print("Conditie simpla cu operator:")
         return verify_simple_conditions(condition, facts, value, **args), value
 
-    return False, "nimic"
-
 def calculate_rule(facts, rule, value, **args):
 
     roads = [f for f in facts if f["value"] == value]
@@ -289,21 +287,6 @@ def evaluate_rules(facts, rules, **args):
              print(f"Concluzie aplicabilă: {rule['conclusion']} \n\n")
         else:
             print("Nu există concluzii aplicabile. \n\n")
-
-                
-
+    
 
 fapte, reguli = extrage_fapte_reguli()
-#evaluate_rules(fapte, reguli, A="bucuresti", B="craiova")
-
-#evaluate_rules(fapte, reguli, A="bucuresti", B="craiova", C="ploiesti")
-
-#evaluate_rules(fapte, reguli, greutate=4000)
-
-#evaluate_rules(fapte, reguli, Plecare="bucuresti")
-
-#evaluate_rules(fapte, reguli, Plecare="bucuresti", Destinatie="pitesti")
-
-#evaluate_rules(fapte, reguli, A="bucuresti", B="craiova", Consum=5)
-
-#evaluate_rules(fapte, reguli, Vehicul="tir1", id="1")

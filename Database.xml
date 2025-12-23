@@ -252,13 +252,40 @@
         <concluzie>conexiune_reciproca(A, B)</concluzie>
     </regula>
 
-    <!-- TBC -->
-    <!--15.
-    Gaseste vehiculul cu capacitatea cea mai mare.
-    Vehiculul trebuie sa fie unic in ceea ce priveste capacitatea sa maxima. -->
-    <!-- <regula>
-        <conditie>vehicul(Vehicul, Capacitate, _)</conditie>
-        <conditie>\+ (vehicul(_, AltaCapacitate, _), AltaCapacitate > Capacitate)</conditie>
-        <concluzie>vehicul_maxim(Vehicul)</concluzie>
-    </regula> -->
+    <!-- 16. Calculeaza distanta totala pentru o ruta cu un intermediar -->
+<regula>
+    <conditie>drum(A, C, Distanta1, _)</conditie>
+    <conditie>drum(C, B, Distanta2, _)</conditie>
+    <conditie>A \= C</conditie>
+    <conditie>C \= B</conditie>
+    <conditie>A \= B</conditie>
+    <calcul>DistantaTotala is Distanta1 + Distanta2</calcul>
+    <concluzie>distanta_ruta_intermediara(A, C, B, DistantaTotala)</concluzie>
+</regula>
+
+<!-- 17. Calculeaza timpul total pentru o ruta cu un intermediar -->
+<regula>
+    <conditie>drum(A, C, _, Timp1)</conditie>
+    <conditie>drum(C, B, _, Timp2)</conditie>
+    <conditie>A \= C</conditie>
+    <conditie>C \= B</conditie>
+    <conditie>A \= B</conditie>
+    <calcul>TimpTotal is Timp1 + Timp2</calcul>
+    <concluzie>timp_ruta_intermediara(A, C, B, TimpTotal)</concluzie>
+</regula>
+
+<!-- 18. Gaseste ruta cea mai scurta (distanta minima) intre doua locatii -->
+<regula>
+    <conditie>drum(A, B, Distanta, _)</conditie>
+    <conditie>Distanta > 0</conditie>
+    <concluzie>ruta_cea_mai_scurta(A, B, Distanta)</concluzie>
+</regula>
+
+<!-- 19. Gaseste ruta cea mai rapida (timp minim) intre doua locatii -->
+<regula>
+    <conditie>drum(A, B, _, Timp)</conditie>
+    <conditie>Timp > 0</conditie>
+    <concluzie>ruta_cea_mai_rapida(A, B, Timp)</concluzie>
+</regula>
+
 </SistemLogistic>

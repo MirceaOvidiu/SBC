@@ -11,6 +11,44 @@ CORS(app)
 # Load facts and rules once at startup
 fapte, reguli = inference_engine.extrage_fapte_reguli()
 
+def find_all_routes(start, end, facts):
+    """Find all possible routes between two locations using DFS"""
+    routes = []
+    visited = set()
+    current_path = []
+    
+    def dfs(current, target, path, distance, time):
+        if current == target:
+            routes.append({
+                'path': path + [current],
+                'distance': distance,
+                'time': time
+            })
+            return
+        
+        visited.add(current)
+        
+        for fact in facts:
+            if fact['type'] == 'drum':
+                locA = fact['attributes'].get('locatieA')
+                locB = fact['attributes'].get('locatieB')
+                dist = int(fact['attributes'].get('distanta', 0))
+                dur = int(fact['attributes'].get('timp', 0))
+                
+                next_location = None
+                if locA == current and locB not in visited:
+                    next_location = locB
+                elif locB == current and locA not in visited:
+                    next_location = locA
+                
+                if next_location:
+                    dfs(next_location, target, path + [current], distance + dist, time + dur)
+        
+        visited.discard(current)
+    
+    dfs(start, end, [], 0, 0)
+    return routes
+
 def parse_query_output(output, query_type):
     """Parse the raw output and extract relevant data based on query type"""
     
@@ -303,6 +341,31 @@ def get_orders():
             'success': False,
             'error': str(e)
         }), 400
+        
+@app.route('/api/best_route', methods=['POST'])
+def best_route():
+    data = request.json
+    start = data.get('start')
+    end = data.get('end')
+    criteria = data.get('criteria', 'shortest')  # 'shortest' or 'fastest'
+    
+    # Find all possible routes
+    routes = find_all_routes(start, end, fapte)
+    
+    if not routes:
+        return jsonify({'error': 'No route found'})
+    
+    # Select best based on criteria
+    if criteria == 'shortest':
+        best = min(routes, key=lambda r: r['distance'])
+    else:  # fastest
+        best = min(routes, key=lambda r: r['time'])
+    
+    # Ensure distance and time are integers
+    best['distance'] = int(best['distance'])
+    best['time'] = int(best['time'])
+    
+    return jsonify(best)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
