@@ -160,8 +160,15 @@ def verify_facts(condition, facts, value, **args):
         
         return False, "nimic"
 
-    elif "vehicul(" in condition and args.get("greutate") != 0:
+    elif "vehicul(" in condition:
         print("Conditie cu vehicul:", condition)
+        
+        # Caz special: dacă avem Consum în args, înseamnă că utilizatorul dorește să calculeze
+        # consumul cu un consum dat direct, nu cu un vehicul specific
+        if args.get("Consum") is not None and args.get("greutate") is None:
+            print(f"Folosim consum direct din parametri: {args.get('Consum')}")
+            # Returnăm True pentru a trece de această condiție, dar nu returnăm niciun vehicul
+            return True, "direct_consumption"
 
         if args.get('Vehicul'):
             vehicles = [f for f in facts if f["type"] == "vehicul"]
@@ -233,24 +240,56 @@ def verify_facts(condition, facts, value, **args):
         return verify_simple_conditions(condition, facts, value, **args), value
 
 def calculate_rule(facts, rule, value, **args):
-
-    roads = [f for f in facts if f["value"] == value]
+    # Găsim drumul între locațiile A și B
+    roads = [f for f in facts if f["type"] == "drum"]
+    
+    locA = args.get('A')
+    locB = args.get('B')
+    consum_per_km = args.get('Consum')
+    
     for road in roads:
-        variables = {
-            "Distanta": road["attributes"].get("distanta"),
-            "ConsumPerKm": args.get('Consum')
-        }
+        road_locA = road["attributes"].get("locatieA")
+        road_locB = road["attributes"].get("locatieB")
+        
+        # Verificăm dacă drumul conectează locațiile cerute
+        if (road_locA == locA and road_locB == locB) or (road_locA == locB and road_locB == locA):
+            distanta = int(road["attributes"].get("distanta", 0))
+            
+            if distanta > 0 and consum_per_km is not None:
+                variables = {
+                    "Distanta": distanta,
+                    "ConsumPerKm": consum_per_km
+                }
 
-        for formula in rule["calculus"]:
-            for var, value in variables.items():
-                formula = formula.replace(var, str(value))
-        try:
-            result = eval(formula)  
-            print(f"Rezultat calculat: {result}")
-            return True
-        except Exception as e:
-            print(f"Error in efectuarea calculului: {e}")
-            return False
+                for formula in rule["calculus"]:
+                    formula_eval = formula
+                    # Convertim sintaxa Prolog "is" la "="
+                    formula_eval = formula_eval.replace(" is ", " = ")
+                    
+                    # Înlocuim variabilele cu valorile lor
+                    for var, val in variables.items():
+                        formula_eval = formula_eval.replace(var, str(val))
+                    
+                    try:
+                        # Evaluăm formula și extragem rezultatul
+                        # De ex: "Consum = (250 / 100) * 8.5"
+                        if "=" in formula_eval:
+                            parts = formula_eval.split("=")
+                            result_var = parts[0].strip()
+                            expression = parts[1].strip()
+                            result = eval(expression)
+                            print(f"Rezultat calculat: {result}")
+                            return True
+                        else:
+                            result = eval(formula_eval)  
+                            print(f"Rezultat calculat: {result}")
+                            return True
+                    except Exception as e:
+                        print(f"Error in efectuarea calculului: {e}")
+                        return False
+    
+    print("Nu s-a găsit drum direct între locațiile specificate")
+    return False
 
 
 # A si B reprezinta niste parametrii in cazul vehiculeleor B este greutatea

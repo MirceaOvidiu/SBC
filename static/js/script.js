@@ -105,8 +105,8 @@ function updateQueryForm() {
                     <input type="text" id="paramB" placeholder="ex: craiova">
                 </div>
                 <div class="form-group">
-                    <label>Consum Combustibil (L/km):</label>
-                    <input type="number" id="paramConsum" placeholder="ex: 5">
+                    <label>Consum (L/100km):</label>
+                    <input type="number" step="0.1" id="paramConsum" placeholder="ex: 8.5">
                 </div>
             `;
             break;
@@ -138,6 +138,54 @@ function updateQueryForm() {
                         <option value="shortest">📏 Ruta cea mai scurtă (distanță minimă)</option>
                         <option value="fastest">⚡ Ruta cea mai rapidă (timp minim)</option>
                     </select>
+                </div>
+            `;
+            break;
+        case 'route_via_intermediate':
+            formHTML += `
+                <div class="form-group">
+                    <label>Locația A (Plecare):</label>
+                    <input type="text" id="paramA" placeholder="ex: bucuresti">
+                </div>
+                <div class="form-group">
+                    <label>Locația C (Intermediar):</label>
+                    <input type="text" id="paramC" placeholder="ex: ploiesti">
+                </div>
+                <div class="form-group">
+                    <label>Locația B (Destinație):</label>
+                    <input type="text" id="paramB" placeholder="ex: constanta">
+                </div>
+            `;
+            break;
+        case 'transport_cost':
+            formHTML += `
+                <div class="form-group">
+                    <label>Vehicul:</label>
+                    <input type="text" id="paramVehicle" placeholder="ex: tir1">
+                </div>
+                <div class="form-group">
+                    <label>Locația A (Plecare):</label>
+                    <input type="text" id="paramStart" placeholder="ex: bucuresti">
+                </div>
+                <div class="form-group">
+                    <label>Locația B (Destinație):</label>
+                    <input type="text" id="paramEnd" placeholder="ex: craiova">
+                </div>
+                <div class="form-group">
+                    <label>Preț Combustibil (RON/litru):</label>
+                    <input type="number" step="0.01" id="paramFuelPrice" placeholder="ex: 7.5">
+                </div>
+            `;
+            break;
+        case 'all_routes':
+            formHTML += `
+                <div class="form-group">
+                    <label>Punct de Plecare:</label>
+                    <input type="text" id="paramStart" placeholder="ex: bucuresti">
+                </div>
+                <div class="form-group">
+                    <label>Destinație:</label>
+                    <input type="text" id="paramEnd" placeholder="ex: constanta">
                 </div>
             `;
             break;
@@ -191,6 +239,106 @@ async function executeQuery() {
             } else {
                 output.className = 'output-box success';
                 output.innerHTML = formatQueryResult(data, 'best_route');
+            }
+        } catch (error) {
+            loading.classList.remove('active');
+            output.style.display = 'block';
+            output.className = 'output-box error';
+            output.textContent = 'Eroare: ' + error.message;
+        }
+        return;
+    }
+    
+    // Handle all_routes with special endpoint
+    if (queryType === 'all_routes') {
+        const start = document.getElementById('paramStart')?.value;
+        const end = document.getElementById('paramEnd')?.value;
+        
+        if (!start || !end) {
+            output.style.display = 'block';
+            output.className = 'output-box error';
+            output.textContent = 'Te rog completează toate câmpurile!';
+            return;
+        }
+        
+        loading.classList.add('active');
+        output.style.display = 'none';
+        
+        try {
+            const response = await fetch('/api/all_routes', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    start: start,
+                    end: end
+                })
+            });
+            
+            const data = await response.json();
+            
+            loading.classList.remove('active');
+            output.style.display = 'block';
+            
+            if (data.success) {
+                output.className = 'output-box success';
+                output.innerHTML = formatAllRoutesResult(data);
+            } else {
+                output.className = 'output-box error';
+                output.textContent = data.message || 'Nu s-au găsit rute';
+            }
+        } catch (error) {
+            loading.classList.remove('active');
+            output.style.display = 'block';
+            output.className = 'output-box error';
+            output.textContent = 'Eroare: ' + error.message;
+        }
+        return;
+    }
+    
+    // Handle transport_cost with special endpoint
+    if (queryType === 'transport_cost') {
+        const vehicle = document.getElementById('paramVehicle')?.value;
+        const start = document.getElementById('paramStart')?.value;
+        const end = document.getElementById('paramEnd')?.value;
+        const fuelPrice = document.getElementById('paramFuelPrice')?.value;
+        
+        if (!vehicle || !start || !end || !fuelPrice) {
+            output.style.display = 'block';
+            output.className = 'output-box error';
+            output.textContent = 'Te rog completează toate câmpurile!';
+            return;
+        }
+        
+        loading.classList.add('active');
+        output.style.display = 'none';
+        
+        try {
+            const response = await fetch('/api/transport_cost', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    vehicle: vehicle,
+                    start: start,
+                    end: end,
+                    fuel_price: parseFloat(fuelPrice)
+                })
+            });
+            
+            const data = await response.json();
+            
+            loading.classList.remove('active');
+            output.style.display = 'block';
+            
+            if (data.success) {
+                output.className = 'output-box success';
+                output.innerHTML = formatTransportCostResult(data);
+            } else {
+                output.className = 'output-box error';
+                output.textContent = data.error || 'Nu s-a putut calcula costul';
             }
         } catch (error) {
             loading.classList.remove('active');
@@ -371,6 +519,15 @@ function formatQueryResult(result, queryType) {
                 html += '</div>';
             } else {
                 html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ Nu s-a găsit nicio rută</div>`;
+            }
+            break;
+        
+        case 'route_via_intermediate':
+            if (result.has_route && result.total_distance) {
+                html += `<div style="font-size: 18px; font-weight: bold; color: #28a745;">✓ Rută disponibilă!</div><br>`;
+                html += `<div style="font-size: 20px; color: #667eea;">📏 Distanță totală: ${result.total_distance} km</div>`;
+            } else {
+                html += `<div style="color: #dc3545;">Nu s-a putut calcula ruta cu intermediar</div>`;
             }
             break;
     }
@@ -696,6 +853,72 @@ async function findBestRoute() {
             </div>
         `;
     }
+}
+
+// Format all routes result
+function formatAllRoutesResult(data) {
+    let html = `<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 15px;">`;
+    html += `✓ ${data.count} rută/rute găsite!</div>`;
+    
+    data.routes.forEach((route, index) => {
+        html += '<div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 10px; border-left: 4px solid #667eea;">';
+        html += `<div style="font-weight: bold; color: #667eea; margin-bottom: 8px;">🛣️ Ruta ${index + 1}</div>`;
+        
+        // Path
+        html += '<div style="margin-bottom: 8px;"><strong>Traseu:</strong><br>';
+        html += '<div style="font-size: 16px; margin-top: 5px;">';
+        html += route.path.map((loc, idx) => {
+            if (idx === 0) return `🚀 ${loc}`;
+            if (idx === route.path.length - 1) return `🎯 ${loc}`;
+            return `➜ ${loc}`;
+        }).join(' ');
+        html += '</div></div>';
+        
+        // Stats
+        html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">';
+        html += `<div><strong>📏 Distanță:</strong> ${route.distance} km</div>`;
+        html += `<div><strong>⏱️ Timp:</strong> ${route.time} min</div>`;
+        html += '</div>';
+        
+        html += '</div>';
+    });
+    
+    return html;
+}
+
+// Format transport cost result
+function formatTransportCostResult(data) {
+    let html = '<div style="font-size: 18px; font-weight: bold; color: #28a745; margin-bottom: 15px;">';
+    html += '✓ Calcul cost transport finalizat!</div>';
+    
+    html += '<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #667eea;">';
+    
+    // Route info
+    html += `<div style="font-size: 16px; margin-bottom: 15px;"><strong>🚛 Vehicul:</strong> ${data.vehicle}</div>`;
+    html += `<div style="font-size: 16px; margin-bottom: 15px;"><strong>🗺️ Rută:</strong> ${data.route}</div>`;
+    html += `<div style="font-size: 16px; margin-bottom: 15px;"><strong>📏 Distanță:</strong> ${data.distance_km} km</div>`;
+    
+    html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #dee2e6;">';
+    
+    // Fuel consumption
+    html += '<div style="margin-bottom: 15px;">';
+    html += `<div><strong>⛽ Consum:</strong> ${data.consumption_per_100km} L/100km</div>`;
+    html += `<div><strong>📊 Total combustibil:</strong> ${data.fuel_liters} litri</div>`;
+    html += `<div><strong>💵 Preț combustibil:</strong> ${data.fuel_price_per_liter} RON/L</div>`;
+    html += '</div>';
+    
+    html += '<hr style="margin: 15px 0; border: none; border-top: 1px solid #dee2e6;">';
+    
+    // Total cost - highlighted
+    html += '<div style="background: #667eea; color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 15px;">';
+    html += `<div style="font-size: 14px; margin-bottom: 5px;">💰 COST TOTAL TRANSPORT</div>`;
+    html += `<div style="font-size: 28px; font-weight: bold;">${data.total_cost} RON</div>`;
+    html += `<div style="font-size: 12px; margin-top: 5px; opacity: 0.9;">(${data.cost_per_km} RON/km)</div>`;
+    html += '</div>';
+    
+    html += '</div>';
+    
+    return html;
 }
 
 // Initialize form on page load

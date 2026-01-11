@@ -192,6 +192,33 @@ def parse_query_output(output, query_type):
             result['can_handle'] = False
             result['message'] = 'Vehiculul nu poate transporta această comandă'
     
+    elif query_type == 'route_via_intermediate':
+        # Extract distance and time for route with intermediate point
+        distance_match = re.search(r'rezultat calculat[:\s]+(\d+)', output, re.IGNORECASE)
+        time_match = re.search(r'rezultat calculat[:\s]+(\d+)', output, re.IGNORECASE)
+        
+        if 'concluzie aplicabilă' in output.lower() and distance_match:
+            result['has_route'] = True
+            result['total_distance'] = int(distance_match.group(1))
+            result['message'] = f'Rută disponibilă prin intermediar: {result["total_distance"]} km'
+        else:
+            result['has_route'] = False
+            result['message'] = 'Nu s-a putut calcula ruta cu intermediar'
+    
+    elif query_type == 'transport_cost':
+        # Extract fuel consumption and calculate cost
+        consumption_match = re.search(r'rezultat calculat[:\s]+(\d+\.?\d*)', output, re.IGNORECASE)
+        if consumption_match:
+            result['fuel_liters'] = float(consumption_match.group(1))
+            result['message'] = f'Consum combustibil: {result["fuel_liters"]} litri'
+        else:
+            result['fuel_liters'] = None
+            result['message'] = 'Nu s-a putut calcula consumul'
+    
+    elif query_type == 'all_routes':
+        # This is handled by a separate endpoint
+        result['message'] = 'Utilizați endpoint-ul /api/all_routes'
+    
     return result
 
 @app.route('/')
@@ -227,7 +254,7 @@ def query():
         if 'Destinatie' in params:
             query_params['Destinatie'] = params['Destinatie']
         if 'Consum' in params:
-            query_params['Consum'] = int(params['Consum'])
+            query_params['Consum'] = float(params['Consum'])
         if 'Vehicul' in params:
             query_params['Vehicul'] = params['Vehicul']
         if 'Id' in params or 'id' in params:
@@ -366,6 +393,98 @@ def best_route():
     best['time'] = int(best['time'])
     
     return jsonify(best)
+
+@app.route('/api/all_routes', methods=['POST'])
+def all_routes():
+    """Return all possible routes between two locations"""
+    data = request.json
+    start = data.get('start')
+    end = data.get('end')
+    
+    if not start or not end:
+        return jsonify({'error': 'Plecare și Destinație sunt necesare'}), 400
+    
+    # Find all possible routes
+    routes = find_all_routes(start, end, fapte)
+    
+    if not routes:
+        return jsonify({
+            'success': False,
+            'message': f'Nu există rute disponibile între {start} și {end}',
+            'routes': []
+        })
+    
+    # Sort routes by distance
+    routes_sorted = sorted(routes, key=lambda r: r['distance'])
+    
+    return jsonify({
+        'success': True,
+        'count': len(routes_sorted),
+        'routes': routes_sorted,
+        'message': f'{len(routes_sorted)} rută/rute găsite'
+    })
+
+@app.route('/api/transport_cost', methods=['POST'])
+def transport_cost():
+    """Calculate transport cost based on vehicle, route and fuel price"""
+    old_stdout = sys.stdout
+    try:
+        data = request.json
+        vehicle = data.get('vehicle')
+        start = data.get('start')
+        end = data.get('end')
+        fuel_price = float(data.get('fuel_price', 0))
+        
+        if not all([vehicle, start, end, fuel_price]):
+            return jsonify({'error': 'Toate parametrii sunt necesari'}), 400
+        
+        # Get vehicle consumption
+        vehicle_data = next((f for f in fapte if f['type'] == 'vehicul' and 
+                           f['attributes'].get('autoturism') == vehicle), None)
+        
+        if not vehicle_data:
+            return jsonify({'error': f'Vehiculul {vehicle} nu a fost găsit'}), 404
+        
+        consumption_per_100km = float(vehicle_data['attributes'].get('consum', 0))
+        
+        # Capture print output for fuel calculation
+        sys.stdout = buffer = io.StringIO()
+        inference_engine.evaluate_rules(fapte, reguli, A=start, B=end, Consum=consumption_per_100km)
+        output = buffer.getvalue()
+        sys.stdout = old_stdout
+        
+        # Extract fuel consumption from output
+        consumption_match = re.search(r'rezultat calculat[:\s]+(\d+\.?\d*)', output, re.IGNORECASE)
+        
+        if consumption_match:
+            fuel_liters = float(consumption_match.group(1))
+            total_cost = fuel_liters * fuel_price
+            
+            # Get distance
+            road = next((f for f in fapte if f['type'] == 'drum' and 
+                        ((f['attributes'].get('locatieA') == start and f['attributes'].get('locatieB') == end) or
+                         (f['attributes'].get('locatieA') == end and f['attributes'].get('locatieB') == start))), None)
+            
+            distance = int(road['attributes'].get('distanta', 0)) if road else 0
+            
+            return jsonify({
+                'success': True,
+                'vehicle': vehicle,
+                'route': f'{start} → {end}',
+                'distance_km': distance,
+                'consumption_per_100km': consumption_per_100km,
+                'fuel_liters': round(fuel_liters, 2),
+                'fuel_price_per_liter': fuel_price,
+                'total_cost': round(total_cost, 2),
+                'cost_per_km': round(total_cost / distance, 2) if distance > 0 else 0,
+                'message': f'Cost total transport: {round(total_cost, 2)} RON'
+            })
+        else:
+            return jsonify({'error': 'Nu s-a putut calcula consumul'}), 400
+            
+    except Exception as e:
+        sys.stdout = old_stdout
+        return jsonify({'error': str(e)}), 400
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
