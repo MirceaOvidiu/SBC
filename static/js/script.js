@@ -122,6 +122,17 @@ function updateQueryForm() {
                 </div>
             `;
             break;
+        case 'optimal_vehicle':
+            formHTML += `
+                <div class="form-group">
+                    <label>ID Comandă:</label>
+                    <input type="text" id="paramId" placeholder="ex: 1">
+                    <small style="display: block; margin-top: 5px; color: #666;">
+                        Găsește vehiculul cu capacitatea minimă necesară pentru această comandă
+                    </small>
+                </div>
+            `;
+            break;
         case 'best_route':
             formHTML += `
                 <div class="form-group">
@@ -481,6 +492,27 @@ function formatQueryResult(result, queryType) {
                 html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ DA - Vehiculul poate transporta comanda</div>`;
             } else {
                 html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ NU - Vehiculul nu poate transporta comanda</div>`;
+            }
+            break;
+            
+        case 'optimal_vehicle':
+            if (result.has_optimal) {
+                html += `<div style="color: #28a745; font-size: 18px; font-weight: bold;">✓ Vehicul optim găsit!</div><br>`;
+                html += '<div style="background: #e8f5e9; padding: 20px; border-radius: 8px; border: 2px solid #4caf50; margin-top: 15px;">';
+                html += `<div style="font-size: 20px; color: #2e7d32; font-weight: bold; margin-bottom: 10px;">🚛 ${result.vehicle_name || result.vehicle_id}</div>`;
+                html += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">';
+                html += `<div><strong>ID:</strong> ${result.vehicle_id || 'N/A'}</div>`;
+                html += `<div><strong>Capacitate:</strong> ${result.capacity} kg</div>`;
+                if (result.consumption) {
+                    html += `<div><strong>Consum:</strong> ${result.consumption} L/100km</div>`;
+                }
+                html += '</div>';
+                html += '<div style="margin-top: 15px; padding: 10px; background: white; border-radius: 5px; font-size: 14px;">';
+                html += '💡 <strong>Acest vehicul are capacitatea minimă necesară pentru a transporta comanda, optimizând eficiența operațională.</strong>';
+                html += '</div>';
+                html += '</div>';
+            } else {
+                html += `<div style="color: #dc3545; font-size: 18px; font-weight: bold;">✗ Nu există vehicul disponibil pentru această comandă</div>`;
             }
             break;
             

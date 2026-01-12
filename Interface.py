@@ -82,24 +82,43 @@ def verify_simple_conditions(condition, facts, value, **args):
             return matches_order
 
         else:
+            # For vehicle list, need to get greutate from args or from another source
+            greutate = args.get("greutate")
+            
+            # If greutate not in args, try to get it from a comanda fact by id
+            if greutate is None and args.get("id") is not None:
+                comanda_id = args.get("id")
+                for fact in facts:
+                    if fact["type"] == "comanda" and fact["attributes"].get("id") == comanda_id:
+                        greutate = fact["attributes"].get("greutate")
+                        break
+            
+            any_match = False
             for mapping in value:
-                mapping["greutate"] = args.get("greutate")
-
+                mapping["greutate"] = greutate
 
                 if ">=" in condition:
                     var1, var2 = condition.split(">=")
                     var1, var2 = var1.strip(), var2.strip()
                     try:
-                        if int(mapping[var1.lower()]) >= int(mapping[var2.lower()]):
+                        val1 = mapping.get(var1.lower())
+                        val2 = mapping.get(var2.lower())
+                        
+                        if val1 is None or val2 is None:
+                            print(f"Skipping: Missing value for {var1} or {var2}")
+                            continue
+                            
+                        if int(val1) >= int(val2):
                             # Find the vehicle name from facts
                             vehicle_name = mapping.get('autoturism', 'necunoscut')
                             vehicle_capacity = mapping.get('capacitate', 'N/A')
                             print(f"Vehicul compatibil: {vehicle_name} (capacitate: {vehicle_capacity} kg)")
+                            any_match = True
                     except (TypeError, ValueError, KeyError) as e:
                         print(f"Skipping due to error: {e}")
-                        return False
+                        continue
                     
-            return True
+            return any_match
     else:
 
         fact = [f for f in facts if f["value"] == value]
@@ -210,12 +229,17 @@ def verify_facts(condition, facts, value, **args):
             departure = order["attributes"].get("nod1") 
             destination = order["attributes"].get("nod2")
             priority = order["attributes"].get("prioritate")
+            order_id = order["attributes"].get("id")
             
             if args.get('Plecare') == departure and args.get('Destinatie') == destination:
                 if priority == "1":
                     return True, value
             
-            if args.get('Plecare') == departure or args.get("id") is not None:
+            # Filter by specific order ID if provided, otherwise by departure location
+            if args.get("id") is not None:
+                if order_id == args.get("id"):
+                    value.append(order["value"])
+            elif args.get('Plecare') == departure:
                 value.append(order["value"])
 
         if not value:
@@ -301,6 +325,7 @@ def evaluate_rules(facts, rules, **args):
         
         all_conditions_met = True
         value = ""
+        matched_values = {}  # Store matched values for conclusion
         
         print(f"{i} Regula",rule)
         i = i + 1
@@ -311,9 +336,41 @@ def evaluate_rules(facts, rules, **args):
                 sub_conditions = [sub.strip() for sub in cond.split(";")]
                 for sub_condition in sub_conditions:
                     condition_met, value = verify_facts(sub_condition, facts, value, **args)
+                    # Store matched values for vehicul and comanda conditions
+                    if condition_met and "vehicul(" in sub_condition and isinstance(value, list):
+                        for v in value:
+                            fact = next((f for f in facts if f["value"] == v), None)
+                            if fact and fact["type"] == "vehicul":
+                                matched_values[v] = {
+                                    'vehicul': fact['attributes'].get('autoturism', v),
+                                    'capacitate': fact['attributes'].get('capacitate'),
+                                    'consum': fact['attributes'].get('consum')
+                                }
+                    elif condition_met and "comanda(" in sub_condition:
+                        if isinstance(value, list):
+                            for v in value:
+                                fact = next((f for f in facts if f["value"] == v), None)
+                                if fact and fact["type"] == "comanda":
+                                    matched_values['greutate'] = fact['attributes'].get('greutate')
                       
             else:
-                condition_met, value = verify_facts(cond, facts, value, **args)  
+                condition_met, value = verify_facts(cond, facts, value, **args)
+                # Store matched values
+                if condition_met and "vehicul(" in cond and isinstance(value, list):
+                    for v in value:
+                        fact = next((f for f in facts if f["value"] == v), None)
+                        if fact and fact["type"] == "vehicul":
+                            matched_values[v] = {
+                                'vehicul': fact['attributes'].get('autoturism', v),
+                                'capacitate': fact['attributes'].get('capacitate'),
+                                'consum': fact['attributes'].get('consum')
+                            }
+                elif condition_met and "comanda(" in cond:
+                    if isinstance(value, list):
+                        for v in value:
+                            fact = next((f for f in facts if f["value"] == v), None)
+                            if fact and fact["type"] == "comanda":
+                                matched_values['greutate'] = fact['attributes'].get('greutate')
 
             if condition_met == False:
                 all_conditions_met = False
@@ -322,8 +379,17 @@ def evaluate_rules(facts, rules, **args):
         if "calculus" in rule:
             all_conditions_met = calculate_rule(facts, rule, value, **args)
 
-        if all_conditions_met == True:         
-             print(f"Concluzie aplicabilă: {rule['conclusion']} \n\n")
+        if all_conditions_met == True:
+            conclusion = rule['conclusion']
+            # For vehicul_optim_comanda, print with actual values from the vehicule list
+            # Only print vehicles that passed the >= check (were printed as "Vehicul compatibil")
+            if "vehicul_optim_comanda" in conclusion and isinstance(value, list):
+                # value contains ALL vehicles, but only compatible ones were printed
+                # Extract compatible vehicles from the print statements instead
+                # We'll rely on the backend to parse "Vehicul compatibil" lines instead
+                print(f"Concluzie aplicabilă: {conclusion} \n\n")
+            else:
+                print(f"Concluzie aplicabilă: {conclusion} \n\n")
         else:
             print("Nu există concluzii aplicabile. \n\n")
     

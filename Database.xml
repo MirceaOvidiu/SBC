@@ -173,6 +173,15 @@
         <concluzie>vehicul_potrivit(Greutate, Vehicul)</concluzie>
     </regula>
 
+    <!-- 5A. Gaseste vehicule potrivite pentru o comanda specificata prin ID.
+    Vehiculul trebuie sa aiba capacitate suficienta pentru greutatea comenzii. -->
+    <regula>
+        <conditie>comanda(Id, _, _, Greutate, _)</conditie>
+        <conditie>vehicul(Vehicul, Capacitate, _)</conditie>
+        <conditie>Capacitate >= Greutate</conditie>
+        <concluzie>vehicul_optim_comanda(Id, Vehicul, Capacitate)</concluzie>
+    </regula>
+
     <!-- 6. 
     Gaseste toate comenzile care pleaca dintr-o locatie specifica.
     Locatia de plecare trebuie sa fie definita si diferita de destinatie. -->

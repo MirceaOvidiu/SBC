@@ -51,6 +51,7 @@ def find_all_routes(start, end, facts):
 
 def parse_query_output(output, query_type):
     """Parse the raw output and extract relevant data based on query type"""
+    global fapte
     
     if not output or not output.strip():
         return {
@@ -191,6 +192,58 @@ def parse_query_output(output, query_type):
         else:
             result['can_handle'] = False
             result['message'] = 'Vehiculul nu poate transporta această comandă'
+    
+    elif query_type == 'optimal_vehicle':
+        # Find optimal vehicle for an order (minimum capacity needed)
+        if 'concluzie aplicabilă' in output.lower() and 'vehicul_optim_comanda' in output.lower():
+            # Extract vehicles from "Vehicul compatibil" lines which show only vehicles that passed the capacity check
+            vehicle_matches = []
+            
+            # Find the section for vehicul_optim_comanda rule (rule 6)
+            lines = output.split('\n')
+            in_optimal_rule = False
+            
+            for line in lines:
+                if '6 Regula' in line or 'vehicul_optim_comanda' in line:
+                    in_optimal_rule = True
+                elif 'Regula' in line and '6 Regula' not in line:
+                    in_optimal_rule = False
+                    
+                if in_optimal_rule and 'Vehicul compatibil:' in line:
+                    # Extract vehicle name and capacity
+                    match = re.search(r'Vehicul compatibil:\s*(\w+)\s*\(capacitate:\s*(\d+)\s*kg\)', line)
+                    if match:
+                        vehicle_name = match.group(1)
+                        capacity = match.group(2)
+                        vehicle_matches.append((vehicle_name, capacity))
+            
+            if vehicle_matches:
+                # Find the vehicle with minimum capacity
+                optimal_vehicle = min(vehicle_matches, key=lambda x: int(x[1]))
+                vehicle_name = optimal_vehicle[0]
+                capacity = int(optimal_vehicle[1])
+                
+                # Get vehicle details from facts
+                vehicle_fact = next((f for f in fapte if f['attributes'].get('autoturism') == vehicle_name), None)
+                
+                if vehicle_fact:
+                    result['has_optimal'] = True
+                    result['vehicle_id'] = vehicle_fact['value']
+                    result['vehicle_name'] = vehicle_fact['attributes'].get('autoturism')
+                    result['capacity'] = vehicle_fact['attributes'].get('capacitate')
+                    result['consumption'] = vehicle_fact['attributes'].get('consum')
+                    result['message'] = f"Vehicul optim găsit: {result['vehicle_name']} (capacitate minimă: {result['capacity']} kg)"
+                else:
+                    result['has_optimal'] = True
+                    result['vehicle_name'] = vehicle_name
+                    result['capacity'] = capacity
+                    result['message'] = f"Vehicul optim găsit: {vehicle_name} (capacitate minimă: {capacity} kg)"
+            else:
+                result['has_optimal'] = False
+                result['message'] = 'Nu s-a putut extrage informațiile despre vehiculul optim'
+        else:
+            result['has_optimal'] = False
+            result['message'] = 'Nu există vehicul disponibil pentru această comandă'
     
     elif query_type == 'route_via_intermediate':
         # Extract distance and time for route with intermediate point

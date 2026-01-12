@@ -6,33 +6,38 @@
 
 body {
     font-family: 'Courier New', monospace;
-    background: #0a0e27;
+    background: #1a0b2e;
     background-image: 
-        repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.03) 2px, rgba(0, 255, 255, 0.03) 4px),
-        radial-gradient(circle at 20% 50%, rgba(255, 0, 255, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 255, 255, 0.1) 0%, transparent 50%);
+        linear-gradient(180deg, #1a0b2e 0%, #2d1b4e 50%, #1a0b2e 100%),
+        repeating-linear-gradient(90deg, transparent, transparent 50px, rgba(255, 0, 128, 0.03) 50px, rgba(255, 0, 128, 0.03) 51px),
+        repeating-linear-gradient(0deg, transparent, transparent 50px, rgba(0, 212, 255, 0.03) 50px, rgba(0, 212, 255, 0.03) 51px),
+        radial-gradient(circle at 50% 0%, rgba(255, 0, 128, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(0, 212, 255, 0.1) 0%, transparent 50%);
     min-height: 100vh;
     padding: 20px;
-    color: #00ffff;
+    color: #ff0080;
 }
 
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    background: rgba(15, 23, 42, 0.7);
+    background: rgba(26, 11, 46, 0.85);
     backdrop-filter: blur(10px);
     border-radius: 20px;
-    border: 2px solid rgba(0, 255, 255, 0.3);
+    border: 3px solid transparent;
+    border-image: linear-gradient(135deg, #ff0080, #7b2cbf, #00d4ff) 1;
     box-shadow: 
-        0 0 40px rgba(0, 255, 255, 0.2),
-        inset 0 0 40px rgba(0, 255, 255, 0.05);
+        0 0 60px rgba(255, 0, 128, 0.4),
+        0 0 30px rgba(0, 212, 255, 0.3),
+        inset 0 0 60px rgba(123, 44, 191, 0.1);
     overflow: hidden;
 }
 
 .header {
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.2) 0%, rgba(255, 0, 255, 0.2) 100%);
-    border-bottom: 3px solid #00ffff;
-    color: #00ffff;
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.3) 0%, rgba(123, 44, 191, 0.3) 50%, rgba(0, 212, 255, 0.3) 100%);
+    border-bottom: 4px solid transparent;
+    border-image: linear-gradient(90deg, #ff0080, #ff6ec7, #00d4ff, #ff0080) 1;
+    color: #ff0080;
     padding: 40px;
     text-align: center;
     position: relative;
@@ -50,8 +55,8 @@ body {
         45deg,
         transparent,
         transparent 10px,
-        rgba(0, 255, 255, 0.05) 10px,
-        rgba(0, 255, 255, 0.05) 20px
+        rgba(255, 0, 128, 0.05) 10px,
+        rgba(255, 0, 128, 0.05) 20px
     );
     animation: scan 8s linear infinite;
     pointer-events: none;
@@ -68,25 +73,28 @@ body {
     text-transform: uppercase;
     letter-spacing: 3px;
     text-shadow: 
-        0 0 10px #00ffff,
-        0 0 20px #00ffff,
-        0 0 30px #00ffff;
+        0 0 10px #ff0080,
+        0 0 20px #ff0080,
+        0 0 40px #ff0080,
+        0 0 60px #ff0080;
     position: relative;
     z-index: 1;
 }
 
 .header p {
     font-size: 1.1em;
-    opacity: 0.8;
+    opacity: 0.9;
     position: relative;
     z-index: 1;
-    color: #ff00ff;
+    color: #00d4ff;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
 }
 
 .tabs {
     display: flex;
-    background: rgba(10, 14, 39, 0.8);
-    border-bottom: 2px solid #00ffff;
+    background: rgba(26, 11, 46, 0.9);
+    border-bottom: 3px solid transparent;
+    border-image: linear-gradient(90deg, #ff0080, #7b2cbf, #00d4ff) 1;
     overflow-x: auto;
     padding: 5px;
 }
@@ -99,7 +107,7 @@ body {
     font-size: 16px;
     transition: all 0.3s;
     white-space: nowrap;
-    color: #00ffff;
+    color: #ff6ec7;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -118,18 +126,18 @@ body {
 }
 
 .tab:hover {
-    background: rgba(0, 255, 255, 0.1);
-    border: 2px solid rgba(0, 255, 255, 0.5);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    background: rgba(255, 0, 128, 0.15);
+    border: 2px solid rgba(255, 0, 128, 0.6);
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.5);
 }
 
 .tab.active {
-    background: rgba(0, 255, 255, 0.2);
-    border: 2px solid #00ffff;
-    color: #ff00ff;
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.25), rgba(123, 44, 191, 0.25));
+    border: 2px solid #ff0080;
+    color: #00d4ff;
     box-shadow: 
-        0 0 20px rgba(0, 255, 255, 0.5),
-        inset 0 0 20px rgba(0, 255, 255, 0.1);
+        0 0 25px rgba(255, 0, 128, 0.6),
+        inset 0 0 25px rgba(255, 0, 128, 0.15);
 }
 
 .tab-content {
@@ -163,48 +171,49 @@ label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #00ffff;
+    color: #ff6ec7;
     text-transform: uppercase;
     letter-spacing: 1px;
     font-size: 14px;
-    text-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+    text-shadow: 0 0 8px rgba(255, 0, 128, 0.6);
 }
 
 input, select {
     width: 100%;
     padding: 12px;
-    border: 2px solid rgba(0, 255, 255, 0.3);
+    border: 2px solid rgba(255, 0, 128, 0.4);
     border-radius: 8px;
     font-size: 16px;
     transition: all 0.3s;
-    background: rgba(10, 14, 39, 0.8);
-    color: #00ffff;
+    background: rgba(26, 11, 46, 0.8);
+    color: #ff6ec7;
     font-family: 'Courier New', monospace;
 }
 
 input:focus, select:focus {
     outline: none;
-    border-color: #00ffff;
+    border-color: #ff0080;
     box-shadow: 
-        0 0 15px rgba(0, 255, 255, 0.5),
-        inset 0 0 10px rgba(0, 255, 255, 0.1);
-    background: rgba(0, 255, 255, 0.05);
+        0 0 20px rgba(255, 0, 128, 0.6),
+        0 0 10px rgba(0, 212, 255, 0.4),
+        inset 0 0 15px rgba(255, 0, 128, 0.15);
+    background: rgba(255, 0, 128, 0.08);
 }
 
 input::placeholder {
-    color: rgba(0, 255, 255, 0.5);
+    color: rgba(255, 110, 199, 0.5);
 }
 
 select option {
-    background: #0a0e27;
-    color: #00ffff;
+    background: #1a0b2e;
+    color: #ff6ec7;
 }
 
 .btn {
-    background: linear-gradient(135deg, rgba(0, 255, 255, 0.3) 0%, rgba(255, 0, 255, 0.3) 100%);
-    color: #00ffff;
+    background: linear-gradient(135deg, rgba(255, 0, 128, 0.4) 0%, rgba(123, 44, 191, 0.4) 50%, rgba(0, 212, 255, 0.3) 100%);
+    color: #00d4ff;
     padding: 15px 40px;
-    border: 2px solid #00ffff;
+    border: 2px solid #ff0080;
     border-radius: 8px;
     font-size: 16px;
     cursor: pointer;
@@ -225,7 +234,7 @@ select option {
     left: 50%;
     width: 0;
     height: 0;
-    background: rgba(0, 255, 255, 0.3);
+    background: rgba(255, 0, 128, 0.4);
     border-radius: 50%;
     transform: translate(-50%, -50%);
     transition: width 0.6s, height 0.6s;
@@ -239,10 +248,11 @@ select option {
 .btn:hover {
     transform: translateY(-3px);
     box-shadow: 
-        0 0 25px rgba(0, 255, 255, 0.6),
+        0 0 30px rgba(255, 0, 128, 0.8),
+        0 0 15px rgba(0, 212, 255, 0.5),
         0 10px 20px rgba(0, 0, 0, 0.3);
-    border-color: #ff00ff;
-    color: #ff00ff;
+    border-color: #7b2cbf;
+    color: #ff0080;
 }
 
 .btn:active {
@@ -256,8 +266,8 @@ select option {
 
 .output-box {
     margin-top: 30px;
-    background: rgba(10, 14, 39, 0.9);
-    border: 2px solid rgba(0, 255, 255, 0.5);
+    background: rgba(26, 11, 46, 0.95);
+    border: 2px solid rgba(255, 0, 128, 0.6);
     border-radius: 8px;
     padding: 20px;
     min-height: 100px;
@@ -266,10 +276,11 @@ select option {
     white-space: pre-wrap;
     font-family: 'Courier New', monospace;
     font-size: 14px;
-    color: #00ff00;
+    color: #00d4ff;
     box-shadow: 
-        0 0 20px rgba(0, 255, 255, 0.3),
-        inset 0 0 20px rgba(0, 255, 255, 0.05);
+        0 0 25px rgba(255, 0, 128, 0.4),
+        0 0 15px rgba(0, 212, 255, 0.3),
+        inset 0 0 25px rgba(123, 44, 191, 0.1);
     position: relative;
 }
 
@@ -278,7 +289,7 @@ select option {
     position: absolute;
     left: 5px;
     top: 5px;
-    color: #00ffff;
+    color: #ff0080;
     animation: blink 1s infinite;
 }
 
@@ -288,21 +299,21 @@ select option {
 }
 
 .output-box.success {
-    border-color: #00ff00;
-    background: rgba(0, 255, 0, 0.05);
-    color: #00ff00;
+    border-color: #00d4ff;
+    background: rgba(0, 212, 255, 0.08);
+    color: #00d4ff;
     box-shadow: 
-        0 0 20px rgba(0, 255, 0, 0.3),
-        inset 0 0 20px rgba(0, 255, 0, 0.05);
+        0 0 25px rgba(0, 212, 255, 0.5),
+        inset 0 0 25px rgba(0, 212, 255, 0.08);
 }
 
 .output-box.error {
-    border-color: #ff0000;
-    background: rgba(255, 0, 0, 0.05);
-    color: #ff0000;
+    border-color: #ff006f;
+    background: rgba(255, 0, 111, 0.08);
+    color: #ff006f;
     box-shadow: 
-        0 0 20px rgba(255, 0, 0, 0.3),
-        inset 0 0 20px rgba(255, 0, 0, 0.05);
+        0 0 25px rgba(255, 0, 111, 0.5),
+        inset 0 0 25px rgba(255, 0, 111, 0.08);
 }
 
 .grid {
@@ -312,12 +323,12 @@ select option {
 }
 
 .info-section {
-    background: rgba(0, 255, 255, 0.05);
+    background: rgba(255, 0, 128, 0.08);
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 20px;
-    border: 2px solid rgba(0, 255, 255, 0.2);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+    border: 2px solid rgba(255, 0, 128, 0.3);
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.2);
     position: relative;
 }
 
@@ -330,7 +341,7 @@ select option {
     height: 2px;
     background: linear-gradient(90deg, 
         transparent, 
-        #00ffff, 
+        #ff0080, 
         transparent
     );
     animation: scan-line 3s linear infinite;
@@ -342,15 +353,15 @@ select option {
 }
 
 .info-section h3 {
-    color: #ff00ff;
+    color: #00d4ff;
     margin-bottom: 15px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+    text-shadow: 0 0 15px rgba(0, 212, 255, 0.8);
 }
 
 .info-section p {
-    color: #00ffff;
+    color: #ff6ec7;
     line-height: 1.6;
 }
 
@@ -358,7 +369,7 @@ select option {
     display: none;
     text-align: center;
     padding: 20px;
-    color: #00ffff;
+    color: #ff6ec7;
 }
 
 .loading.active {
@@ -366,14 +377,14 @@ select option {
 }
 
 .spinner {
-    border: 4px solid rgba(0, 255, 255, 0.1);
-    border-top: 4px solid #00ffff;
+    border: 4px solid rgba(255, 0, 128, 0.15);
+    border-top: 4px solid #ff0080;
     border-radius: 50%;
     width: 50px;
     height: 50px;
     animation: spin 0.8s linear infinite;
     margin: 0 auto;
-    box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+    box-shadow: 0 0 25px rgba(255, 0, 128, 0.6);
 }
 
 @keyframes spin {
@@ -385,25 +396,25 @@ select option {
     width: 100%;
     border-collapse: collapse;
     margin-top: 15px;
-    border: 2px solid rgba(0, 255, 255, 0.3);
+    border: 2px solid rgba(255, 0, 128, 0.4);
 }
 
 .data-table th,
 .data-table td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid rgba(0, 255, 255, 0.2);
-    color: #00ffff;
+    border-bottom: 1px solid rgba(255, 0, 128, 0.25);
+    color: #ff6ec7;
 }
 
 .data-table th {
-    background: rgba(0, 255, 255, 0.2);
-    color: #ff00ff;
+    background: rgba(255, 0, 128, 0.25);
+    color: #00d4ff;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    border-bottom: 2px solid #00ffff;
-    text-shadow: 0 0 5px rgba(255, 0, 255, 0.5);
+    border-bottom: 2px solid #ff0080;
+    text-shadow: 0 0 10px rgba(0, 212, 255, 0.8);
 }
 
 .data-table tr {
@@ -411,8 +422,8 @@ select option {
 }
 
 .data-table tr:hover {
-    background: rgba(0, 255, 255, 0.1);
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+    background: rgba(255, 0, 128, 0.12);
+    box-shadow: 0 0 20px rgba(255, 0, 128, 0.3);
 }
 
 .badge {
@@ -427,24 +438,24 @@ select option {
 }
 
 .badge-priority-1 {
-    background: rgba(255, 0, 0, 0.2);
-    color: #ff0000;
-    border-color: #ff0000;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+    background: rgba(255, 0, 111, 0.25);
+    color: #ff006f;
+    border-color: #ff006f;
+    box-shadow: 0 0 15px rgba(255, 0, 111, 0.6);
 }
 
 .badge-priority-2 {
-    background: rgba(255, 255, 0, 0.2);
-    color: #ffff00;
-    border-color: #ffff00;
-    box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
+    background: rgba(255, 179, 0, 0.25);
+    color: #ffb300;
+    border-color: #ffb300;
+    box-shadow: 0 0 15px rgba(255, 179, 0, 0.6);
 }
 
 .badge-priority-3 {
-    background: rgba(0, 255, 0, 0.2);
-    color: #00ff00;
-    border-color: #00ff00;
-    box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+    background: rgba(0, 212, 255, 0.25);
+    color: #00d4ff;
+    border-color: #00d4ff;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.6);
 }
 
 /* Scrollbar styling */
@@ -454,24 +465,24 @@ select option {
 }
 
 ::-webkit-scrollbar-track {
-    background: rgba(10, 14, 39, 0.5);
+    background: rgba(26, 11, 46, 0.6);
     border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: rgba(0, 255, 255, 0.5);
+    background: rgba(255, 0, 128, 0.6);
     border-radius: 10px;
-    border: 2px solid rgba(0, 255, 255, 0.2);
+    border: 2px solid rgba(255, 0, 128, 0.3);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 255, 255, 0.8);
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+    background: rgba(255, 0, 128, 0.9);
+    box-shadow: 0 0 15px rgba(255, 0, 128, 0.8);
 }
 
 /* Additional neon effects */
 .data-table td {
-    text-shadow: 0 0 2px rgba(0, 255, 255, 0.3);
+    text-shadow: 0 0 3px rgba(255, 0, 128, 0.4);
 }
 
 /* Pulsing effect for active elements */
